@@ -8,13 +8,10 @@ goodbye	DEFB	"and good-bye!\n\0"
 
 main	ADR	R0, hello	; printf("Hello ")
 	SVC 	3
-
-	start CMP R0, #0x0000000A; while R0 != 10 {// translate to ARM cod
-	BEQ skip
-	SVC	1		; input a character to R0
-	SVC	0		; output the character in R0
-	B   start
-	skip
+	start CMP R0, #0x0000000A; while R0 != 10 {// translate to ARM code
+		SVCNE	1		; input a character to R0
+		SVCNE	0		; output the character in R0
+	BNE start
 	; }// translate to ARM code
 
 	ADR	R0, goodbye 	; printf("and good-bye!")
