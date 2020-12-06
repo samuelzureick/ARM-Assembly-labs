@@ -45,9 +45,12 @@ printAgeHistory
 		;PUSH	{R5}
 		;PUSH	{R4}
 
-		LDR	R6, [SP, #(3 + 2) * 4]	; Get parameters from stack
-		LDR	R1, [SP, #(3 + 1) * 4]
-		LDR	R2, [SP, #(3 + 0) * 4]
+		;LDR	R6, [SP, #(3 + 2) * 4]	; Get parameters from stack
+		;LDR	R1, [SP, #(3 + 1) * 4]
+		;LDR	R2, [SP, #(3 + 0) * 4]
+		MOV R6, R10
+		MOV R1, R11
+		MOV R2, R12
 
 ;   year = bYear + 1
 		ADD	R4, R2, #1
@@ -165,32 +168,38 @@ main
 	MOV	R6, R4
 
 ; printAgeHistory(pDay, pMonth, 2000)
-		LDR	R0, pDay
-		PUSH	{R0}			; Stack first parameter
-		LDR	R0, pMonth
-		PUSH	{R0}			; Stack second parameter
-		MOV	R0, #2000
-		PUSH	{R0}			; Stack third parameter
+		;LDR	R0, pDay
+		;PUSH	{R0}			; Stack first parameter
+		;LDR	R0, pMonth
+		;PUSH	{R0}			; Stack second parameter
+		;MOV	R0, #2000
+		;PUSH	{R0}			; Stack third parameter
+		LDR R10, pDay
+		LDR R11, pMonth
+		MOV R12, #2000
 		BL	printAgeHistory
-		POP	{R0}			; Deallocate three 32-bit variables
-		POP	{R0}
-		POP	{R0}
+		;POP	{R0}			; Deallocate three 32-bit variables
+		;POP	{R0}
+		;POP	{R0}
 
 ; print("Another person");
 		ADRL	R0, another
 		SVC	print_str
 
 ; printAgeHistory(13, 11, 2000)
-		MOV	R0, #13
-		PUSH	{R0}			; Stack first parameter
-		MOV	R0, #11
-		STR	R0, [SP, #-4]!		; An explicit coding of PUSH
-		MOV	R0, #2000
-		STMFD	SP!, {R0}		; The STore Multiple mnemonic for PUSH {R0}
+		;MOV	R0, #13
+		;PUSH	{R0}			; Stack first parameter
+		;MOV	R0, #11
+		;STR	R0, [SP, #-4]!		; An explicit coding of PUSH
+		;MOV	R0, #2000
+		;STMFD	SP!, {R0}		; The STore Multiple mnemonic for PUSH {R0}
+		LDR R10, pDay
+		LDR R11, pMonth
+		MOV R12, #2000
 		BL	printAgeHistory
-		POP	{R0}			; Deallocate three 32-bit variables
-		POP	{R0}
-		POP	{R0}
+		;POP	{R0}			; Deallocate three 32-bit variables
+		;POP	{R0}
+		;POP	{R0}
 
 	; Now check to see if register values intact (Not part of Java)
 	LDR	R0, =&12345678		; Test value

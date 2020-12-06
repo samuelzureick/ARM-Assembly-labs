@@ -41,13 +41,10 @@ pYear		  DEFW	2005	;  pYear = 2005 //or whatever is this year
 
 printAgeHistory	
 		STMFD SP!, {R4-R6}
-		;PUSH	{R6}			; callee saves three registers
-		;PUSH	{R5}
-		;PUSH	{R4}
-
-		LDR	R6, [SP, #(3 + 2) * 4]	; Get parameters from stack
-		LDR	R1, [SP, #(3 + 1) * 4]
-		LDR	R2, [SP, #(3 + 0) * 4]
+		
+		MOV R6, R10
+		MOV R1, R11
+		MOV R2, R12
 
 ;   year = bYear + 1
 		ADD	R4, R2, #1
@@ -58,22 +55,26 @@ printAgeHistory
 		ADRL	R0, wasborn
 		SVC	print_str
 		MOV	R0, R6
-		SVC	print_no
-		MOV	R0, #'/'
-		SVC	print_char
-		MOV	R0, R1
-		SVC	print_no
-		MOV	R0, #'/'
-		SVC	print_char
-		MOV	R0, R2
-		SVC	print_no
-		MOV	R0, #cLF
-		SVC	print_char
+		push {LR}
+		BL printDate
+		pop {LR}
 
 ; this code does: while year < pYear //{
-loop1	LDR	R0, pYear
+loop1	; r4 = 
+		LDR	R0, pYear
 		CMP	R4, R0
-		BHS	end1		; Years are unsigned
+		BHS	end1	
+		CMP R0, R2
+		BEQ mTest
+
+mTest   LDR R0, pMonth
+		CMP R1, R0
+		BLT end1
+		BEQ dTest
+
+dTest   LDR R0, pDay
+		CMP R6, R0
+		BLT end1	; Years are unsigned
 ; for part 4, should be changed to:
 ; while year < pYear or
 ;				(year == pYear and bMonth < pMonth) or
@@ -86,18 +87,9 @@ loop1	LDR	R0, pYear
 		SVC	print_no
 		ADRL	R0, on
 		SVC	print_str
-		MOV	R0, R6
-		SVC	print_no
-		MOV	R0, #'/'
-		SVC	print_char
-		MOV	R0, R1
-		SVC	print_no
-		MOV	R0, #'/'
-		SVC	print_char
-		MOV	R0, R4
-		SVC	print_no
-		MOV	R0, #cLF
-		SVC	print_char
+		push {LR}
+		BL printDate
+		pop {LR}
 
 		; year = year + 1
 		ADD	R4, R4, #1
@@ -113,6 +105,9 @@ end1
 		LDR	R0, pMonth
 		CMP	R1, R0
 		BNE	else1
+		LDR R0, pDay
+		CMP R6, R0
+		BNE else1
 
 ; print("This person is " + str(age) + " today!")
 		ADRL	R0, is
@@ -134,6 +129,18 @@ else1
 		SVC	print_no
 		ADRL	R0, on
 		SVC	print_str
+		push {LR}
+		BL printDate
+		pop {LR}
+		
+
+
+; }// end of printAgeHistory
+end2		
+		LDMFD SP!, {R4-R6}
+		MOV	PC, LR
+
+printDate
 		MOV	R0, R6
 		SVC	print_no
 		MOV	R0, #'/'
@@ -146,14 +153,7 @@ else1
 		SVC	print_no
 		MOV	R0, #cLF
 		SVC	print_char
-
-; }// end of printAgeHistory
-end2		
-		LDMFD SP!, {R4-R6}
-		;POP	{R4}		; callee saved registers
-		;POP	{R5}
-		;POP	{R6}
-		MOV	PC, LR
+		MOV PC, LR
 
 another		DEFB	"Another person",10,0
 		ALIGN
@@ -165,32 +165,22 @@ main
 	MOV	R6, R4
 
 ; printAgeHistory(pDay, pMonth, 2000)
-		LDR	R0, pDay
-		PUSH	{R0}			; Stack first parameter
-		LDR	R0, pMonth
-		PUSH	{R0}			; Stack second parameter
-		MOV	R0, #2000
-		PUSH	{R0}			; Stack third parameter
+		LDR R10, pDay
+		LDR R11, pMonth
+		MOV R12, #2000
 		BL	printAgeHistory
-		POP	{R0}			; Deallocate three 32-bit variables
-		POP	{R0}
-		POP	{R0}
+		
 
 ; print("Another person");
 		ADRL	R0, another
 		SVC	print_str
 
 ; printAgeHistory(13, 11, 2000)
-		MOV	R0, #13
-		PUSH	{R0}			; Stack first parameter
-		MOV	R0, #11
-		STR	R0, [SP, #-4]!		; An explicit coding of PUSH
-		MOV	R0, #2000
-		STMFD	SP!, {R0}		; The STore Multiple mnemonic for PUSH {R0}
+		LDR R10, pDay
+		LDR R11, pMonth
+		MOV R12, #2000
 		BL	printAgeHistory
-		POP	{R0}			; Deallocate three 32-bit variables
-		POP	{R0}
-		POP	{R0}
+
 
 	; Now check to see if register values intact (Not part of Java)
 	LDR	R0, =&12345678		; Test value
